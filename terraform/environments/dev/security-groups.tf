@@ -43,3 +43,4 @@ resource "aws_vpc_security_group_ingress_rule" "dev_endpoints_from_ec2" {
 
   description = "Allow HTTPS from Development EC2"
 }
+

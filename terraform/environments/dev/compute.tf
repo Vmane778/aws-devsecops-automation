@@ -28,6 +28,8 @@ data "aws_ami" "amazon_linux_2023" {
 resource "aws_instance" "dev_private" {
   ami           = data.aws_ami.amazon_linux_2023.id
   instance_type = "t3.micro"
+  ebs_optimized = true
+  monitoring    = true
 
   subnet_id = aws_subnet.dev_private.id
 
@@ -39,13 +41,11 @@ resource "aws_instance" "dev_private" {
 
   associate_public_ip_address = false
 
-  # Require secure Instance Metadata Service v2
   metadata_options {
     http_endpoint = "enabled"
     http_tokens   = "required"
   }
 
-  # Encrypt the root storage volume
   root_block_device {
     volume_type           = "gp3"
     volume_size           = 8
@@ -57,7 +57,6 @@ resource "aws_instance" "dev_private" {
     Name = "dev-private-ec2"
   }
 
-  # Wait for SSM permissions and private endpoints
   depends_on = [
     aws_iam_role_policy_attachment.dev_ssm_policy,
     aws_vpc_endpoint.ssm,

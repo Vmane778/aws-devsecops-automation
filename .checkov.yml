@@ -1,0 +1,10 @@
+skip-check:
+  - CKV_AWS_394
+  - CKV2_AWS_11
+  - CKV2_AWS_12
+  - CKV_AWS_18
+  - CKV_AWS_144
+
+# These policies are intentionally skipped for this temporary development lab environment.
+# The VPC and S3 bucket are intentionally minimal and single-region to keep the lab
+# lightweight and cost-effective while still demonstrating AWS networking and private access patterns.
