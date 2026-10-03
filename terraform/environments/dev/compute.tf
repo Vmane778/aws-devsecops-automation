@@ -63,4 +63,4 @@ resource "aws_instance" "dev_private" {
     aws_vpc_endpoint.ssm,
     aws_vpc_endpoint.ssmmessages
   ]
-}s
+}
