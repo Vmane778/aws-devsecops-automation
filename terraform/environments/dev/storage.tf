@@ -1,3 +1,19 @@
+resource "aws_kms_key" "dev_s3" {
+  description             = "KMS key for Development S3 bucket encryption"
+  deletion_window_in_days = 7
+  enable_key_rotation     = true
+
+  tags = {
+    Name = "dev-s3-kms-key"
+  }
+}
+
+resource "aws_kms_alias" "dev_s3" {
+  name          = "alias/dev-s3-storage"
+  target_key_id = aws_kms_key.dev_s3.key_id
+}
+
+
 # Identify the current AWS account for a globally unique bucket name
 data "aws_caller_identity" "current" {}
 
@@ -34,13 +50,16 @@ resource "aws_s3_bucket_versioning" "dev_app_files" {
   }
 }
 
-# Encrypt stored objects with Amazon S3 managed AES-256 encryption
+# Encrypt stored objects with Amazon S3
 resource "aws_s3_bucket_server_side_encryption_configuration" "dev_app_files" {
   bucket = aws_s3_bucket.dev_app_files.id
 
   rule {
+    bucket_key_enabled = true
+
     apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
+      sse_algorithm     = "aws:kms"
+      kms_master_key_id = aws_kms_key.dev_s3.arn
     }
   }
 }
@@ -104,6 +123,21 @@ data "aws_iam_policy_document" "dev_ec2_s3_access" {
 
     resources = [
       "${aws_s3_bucket.dev_app_files.arn}/*"
+    ]
+  }
+
+  statement {
+    sid    = "UseDevelopmentS3KMSKey"
+    effect = "Allow"
+
+    actions = [
+      "kms:Decrypt",
+      "kms:GenerateDataKey",
+      "kms:DescribeKey"
+    ]
+
+    resources = [
+      aws_kms_key.dev_s3.arn
     ]
   }
 }
